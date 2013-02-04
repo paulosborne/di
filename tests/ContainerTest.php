@@ -51,6 +51,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     {
         $container = new Container;
 
+        $this->assertTrue($container['Assets\Foo'] instanceof Assets\Foo);
         $this->assertTrue($container['Assets\Foo']->bar instanceof Assets\Bar);
         $this->assertTrue($container['Assets\Foo']->bar->baz instanceof Assets\Baz);
     }
