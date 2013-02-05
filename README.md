@@ -4,6 +4,10 @@
 
 Orno\Di is a small but powerful dependency injection container that allows you to decouple components in your application in order to write clean and testable code.
 
+- [Registering Objects](#registering-objects)
+- [Aliasing Objects](#aliasing-objects)
+- [Shared Objects](#shared-objects)
+
 ### Registering Objects
 
 Objects can be defined as anonymous functions or a string of the fully qualified namespace.
