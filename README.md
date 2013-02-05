@@ -85,7 +85,7 @@ $foo->bar->helloWorld();
 
 The snippet above will assign the object `Foo` to `$foo` which will contain a property `$bar` containing the object `Bar`.
 
-The above example could be extended and the container will resolve ALL nested dependencies.
+This could be extended and the container will resolve ALL nested dependencies.
 
 ### Implementations of Interfaces
 
