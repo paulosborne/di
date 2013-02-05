@@ -99,7 +99,7 @@ class Bar
     /**
      * @param Baz $baz
      */
-    public function __construct(BazInterface)
+    public function __construct(BazInterface $baz)
     {
         $this->baz = $baz;
     }
