@@ -19,13 +19,6 @@ class Container implements ArrayAccess
     protected $shared = [];
 
     /**
-     * Should the container use reflection to resolve dependencies?
-     *
-     * @var boolean
-     */
-    protected $reflection = true;
-
-    /**
      * Register a class name, closure or fully configured item with the container,
      * we will handle dependencies at the time it is requested
      *
@@ -67,14 +60,11 @@ class Container implements ArrayAccess
 
         // if the item is a closure or pre-configured object we just return it
         if ($this->values[$alias]['concrete'] instanceof Closure) {
-            // TODO: sharing for closures!!
-            $object = $this->values[$alias]['concrete']();
+            return $this->values[$alias]['concrete']();
         }
 
         // if we've got this far we need to build the object and resolve it's dependencies
-        if ($this->refelection === true) {
-            $object = $this->build($alias, $this->values[$alias]['concrete']);
-        }
+        $object = $this->build($alias, $this->values[$alias]['concrete']);
 
         // do we need to save it as a shared item?
         if ($this->values[$alias]['shared'] === true) {
