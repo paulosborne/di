@@ -19,12 +19,11 @@ class Container implements ArrayAccess
     protected $shared = [];
 
     /**
-     * @param array $values
+     * Should the container use reflection to resolve dependencies?
+     *
+     * @var boolean
      */
-    public function __construct(array $values = [])
-    {
-        $this->values = $values;
-    }
+    protected $reflection = true;
 
     /**
      * Register a class name, closure or fully configured item with the container,
@@ -69,11 +68,13 @@ class Container implements ArrayAccess
         // if the item is a closure or pre-configured object we just return it
         if ($this->values[$alias]['concrete'] instanceof Closure) {
             // TODO: sharing for closures!!
-            return $this->values[$alias]['concrete']();
+            $object = $this->values[$alias]['concrete']();
         }
 
         // if we've got this far we need to build the object and resolve it's dependencies
-        $object = $this->build($alias, $this->values[$alias]['concrete']);
+        if ($this->refelection === true) {
+            $object = $this->build($alias, $this->values[$alias]['concrete']);
+        }
 
         // do we need to save it as a shared item?
         if ($this->values[$alias]['shared'] === true) {
@@ -134,7 +135,7 @@ class Container implements ArrayAccess
 
             // if the type hint is not instantiable, it could be an interface so we have a last
             // ditch attempt to resolve a class from the @param annotation
-            $matches = $this->parseDocComment($concrete);
+            $matches = $this->getConstructorParams($concrete);
 
             if ($matches !== false) {
                 foreach ($matches['name'] as $key => $val) {
@@ -156,7 +157,7 @@ class Container implements ArrayAccess
      * @param  string $concrete
      * @return array|boolean
      */
-    public function parseDocComment($concrete)
+    public function getConstructorParams($concrete)
     {
         $docComment = (new ReflectionMethod($concrete, '__construct'))->getDocComment();
 
