@@ -23,21 +23,21 @@ class Container implements ArrayAccess
      * we will handle dependencies at the time it is requested
      *
      * @param  string  $alias
-     * @param  mixed   $concrete
+     * @param  mixed   $object
      * @param  boolean $shared
      * @return void
      */
-    public function register($alias, $concrete = null, $shared = false)
+    public function register($alias, $object = null, $shared = false)
     {
-        // if $concrete is null we assume the $alias is a class name that
+        // if $object is null we assume the $alias is a class name that
         // needs to be registered
-        if (is_null($concrete)) {
-            $concrete = $alias;
+        if (is_null($object)) {
+            $object = $alias;
         }
 
-        // simply store whatever $concrete is in the container and resolve it
+        // simply store whatever $object is in the container and resolve it
         // when it is requested
-        $this->values[$alias]['concrete'] = $concrete;
+        $this->values[$alias]['object'] = $object;
         $this->values[$alias]['shared'] = $shared === true ?: false;
     }
 
@@ -59,12 +59,19 @@ class Container implements ArrayAccess
         }
 
         // if the item is a closure or pre-configured object we just return it
-        if ($this->values[$alias]['concrete'] instanceof Closure) {
-            return $this->values[$alias]['concrete']();
+        if ($this->values[$alias]['object'] instanceof Closure) {
+            $object = $this->values[$alias]['object']();
+
+            // do we need to store the closure result as shared?
+            if ($this->values[$alias]['shared'] === true) {
+                $this->shared[$alias] = $object;
+            }
+
+            return $object;
         }
 
         // if we've got this far we need to build the object and resolve it's dependencies
-        $object = $this->build($alias, $this->values[$alias]['concrete']);
+        $object = $this->build($alias, $this->values[$alias]['object']);
 
         // do we need to save it as a shared item?
         if ($this->values[$alias]['shared'] === true) {
@@ -75,28 +82,28 @@ class Container implements ArrayAccess
     }
 
     /**
-     * Takes the $concrete and instantiates it with all dependencies injected
+     * Takes the $object and instantiates it with all dependencies injected
      * into it's constructor
      *
      * @param  string $alias
-     * @param  string $concrete
+     * @param  string $object
      * @return object
      */
-    public function build($alias, $concrete)
+    public function build($alias, $object)
     {
-        $reflection = new ReflectionClass($concrete);
+        $reflection = new ReflectionClass($object);
         $construct = $reflection->getConstructor();
 
-        // if the $concrete has no constructor we just return the object
+        // if the $object has no constructor we just return the object
         if (is_null($construct)) {
-            return new $concrete;
+            return new $object;
         }
 
         // get the constructors params to pass to dependencies method
         $params = $construct->getParameters();
 
         // resolve an array of dependencies
-        $dependencies = $this->dependencies($concrete, $params);
+        $dependencies = $this->dependencies($object, $params);
 
         return $reflection->newInstanceArgs($dependencies);
     }
@@ -106,27 +113,36 @@ class Container implements ArrayAccess
      * Will first check if the parameters type hint is instantiable and resolve that, if
      * not it will attempt to resolve an implementation from the param annotation
      *
-     * @param  string $concrete
+     * @param  string $object
      * @param  array  $params
      * @return array
      */
-    public function dependencies($concrete, $params)
+    public function dependencies($object, $params)
     {
         $dependencies = [];
 
         foreach ($params as $param) {
-            $dependency = $param->getClass();
+            $dependency     = $param->getClass();
+            $dependencyName = $dependency->getName();
 
             // if the type hint is instantiable we just resolve it
             if ($dependency->isInstantiable()) {
-                $dependencies[] = $this->resolve($dependency->getName());
+                $dependencies[] = $this->resolve($dependencyName);
                 continue;
             }
 
-            // if the type hint is not instantiable, it could be an interface so we have a last
-            // ditch attempt to resolve a class from the @param annotation
-            $matches = $this->getConstructorParams($concrete);
+            // has the dependency been registered to an alias with the container?
+            // e.g. Interface to Implementation
+            if (array_key_exists($dependencyName, $this->values)) {
+                $dependencies[] = $this->resolve($dependencyName);
+                continue;
+            }
 
+            // if we've got this far we can check the @param annotations from the
+            // constructors DocComment to try and resolve a concrete implementation
+            $matches = $this->getConstructorParams($object);
+
+            // loop through constructor parameters and match any annotations to resolve
             if ($matches !== false) {
                 foreach ($matches['name'] as $key => $val) {
                     if ($val === $param->getName()) {
@@ -137,26 +153,26 @@ class Container implements ArrayAccess
             }
         }
 
-        return (array) $dependencies;
+        return $dependencies;
     }
 
     /**
-     * Accepts the name of an object in string form and returns the an
+     * Accepts the name of an object in string form and returns an
      * array of param matches from the constructor docComment
      *
-     * @param  string $concrete
+     * @param  string $object
      * @return array|boolean
      */
-    public function getConstructorParams($concrete)
+    public function getConstructorParams($object)
     {
-        $docComment = (new ReflectionMethod($concrete, '__construct'))->getDocComment();
+        $docComment = (new ReflectionMethod($object, '__construct'))->getDocComment();
 
-        $results = preg_match_all(
+        $result = preg_match_all(
             '/@param[\t\s]*(?P<type>[^\t\s]*)[\t\s]*\$(?P<name>[^\t\s]*)/sim',
             $docComment, $matches
         );
 
-        return $results > 0 ? $matches : false;
+        return $result > 0 ? $matches : false;
     }
 
     /**

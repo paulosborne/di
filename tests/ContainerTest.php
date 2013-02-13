@@ -47,13 +47,39 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $this->assertSame($container->resolve('Test'), 'Hello World');
     }
 
+    public function testSharedClosureResolution()
+    {
+        $container = new Container;
+        $container->register('Baz', function() {
+            return new stdClass;
+        }, true);
+
+        $object1 = $container->resolve('Baz');
+        $object2 = $container->resolve('Baz');
+
+        $this->assertSame($object1, $object2);
+    }
+
+    public function testAliasedDependencyResolution()
+    {
+        $container = new Container;
+
+        $container->register('Test', 'Assets\Baz');
+        $container->register('Assets\BazInterface', 'Assets\Baz');
+
+        $this->assertTrue($container->resolve('Test') instanceof Assets\Baz);
+        $this->assertTrue($container->resolve('Assets\BazInterface') instanceof Assets\Baz);
+    }
+
     public function testMultipleNestedDependencies()
     {
         $container = new Container;
 
-        $this->assertTrue($container['Assets\Foo'] instanceof Assets\Foo);
-        $this->assertTrue($container['Assets\Foo']->bar instanceof Assets\Bar);
-        $this->assertTrue($container['Assets\Foo']->bar->baz instanceof Assets\Baz);
+        $foo = $container->resolve('Assets\Foo');
+
+        $this->assertTrue($foo instanceof Assets\Foo);
+        $this->assertTrue($foo->bar instanceof Assets\Bar);
+        $this->assertTrue($foo->bar->baz instanceof Assets\Baz);
     }
 
     public function testImplementationIsInstanceOfInterface()
