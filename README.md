@@ -12,6 +12,7 @@ Orno\Di is a small but powerful dependency injection container that allows you t
 - [Constructor Injection](#constructor-injection)
 - [Setter Injection](#setter-injection)
 - [Automatic Resolution of Dependencies](#automatic-resolution-of-dependencies)
+- [Annotations](#annotations)
 
 ### Factory Closures
 
@@ -154,7 +155,7 @@ class Bam
 }
 ```
 
-In the above code, `Foo` has 2 dependencies `Bar` and `Baz`, `Bar` has a further dependency of `Bam`. In a normal cas you would have to do the following to return a fully configured instance of `Foo`.
+In the above code, `Foo` has 2 dependencies `Bar` and `Baz`, `Bar` has a further dependency of `Bam`. In a normal case you would have to do the following to return a fully configured instance of `Foo`.
 
 ```php
 $bam = new Bam;
@@ -163,10 +164,45 @@ $bar = new Bar($bam);
 $foo = new Foo($bar, $baz);
 ```
 
-With nested dependencies, this can become quite cumbersome and hard to keep track of. With this container, to return a fully configured instance of `Foo` it is as simple as turning on auto resolution and requesting and instance of `Foo`.
+With nested dependencies, this can become quite cumbersome and hard to keep track of. With the container, to return a fully configured instance of `Foo` it is as simple as turning on auto resolution and requesting and instance of `Foo`.
 
 ```php
 $container = (new Orno\Di\Container)->autoResolve(true);
 
 $foo = $container->resolve('Foo');
 ```
+
+### Annotations
+
+When using automatic resolution, what happens when our requested object has a dependency that is an implementation of an interface? If we look back to our `Session` object in the *Constructor Injection* example, it requires an implementation of `StorageInterface`. With discreet annotations in your doc block it is easy to specify what implementation you want to inject.
+
+```php
+class Session
+{
+    protected $storage;
+
+    /**
+     * @param Storage $storage
+     */
+    public function __construct(StorageInterface $storage)
+    {
+        $this->storage = $storage;
+    }
+}
+
+interface StorageInterface
+{
+    // ..
+}
+
+class Storage implements StorageInterface
+{
+    // ..
+}
+
+$container = (new Orno\Di\Container)->autoResolve(true);
+
+$session = $container->resolve('Session');
+```
+
+The container looks simply at the `@param` annotation so as to not force you to change the way you write your code. In this example the container sees that `$session` wants the object `Session` and injects it automatically.
