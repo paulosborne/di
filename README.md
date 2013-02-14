@@ -7,9 +7,10 @@ Orno\Di is a small but powerful dependency injection container that allows you t
 > ### Note
 > Using a **Dependency Injection Container** is not the same as using the **Dependency Injection Pattern**. Be careful not to create a hard dependency on the container and be aware of the slight decline in performance it will create. Using Orno\Di correctly will allow you to create a good balance between fast, easy development of de-coupled, testable code and performance.
 
-- [Basic Usage](#basic-usage)
+### Usage
+- [Factory Closures](#factory-closure)
 
-### Basic Usage
+### Factory Closures
 
 The most performant way to use Orno\Di is to use factory closures/anonymous functions to build your objects. By registering a closure that returns a fully configured object, when resolved, your object will be lazy loaded as and when you need access to it.
 
