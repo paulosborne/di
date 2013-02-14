@@ -32,9 +32,11 @@ class Bar
 
 $container = new Orno\Di\Container;
 
-$container->register(function() {
+$container->register('foo', function() {
     $bar = new Bar;
     return new Foo($bar);
 });
+
+$foo = $container->resolve('foo');
 ```
 
