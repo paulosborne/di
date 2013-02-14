@@ -19,6 +19,13 @@ class Container implements ArrayAccess
     protected $shared = [];
 
     /**
+     * Should the container automatically resolve dependencies?
+     *
+     * @var boolean
+     */
+    protected $autoResolve = false;
+
+    /**
      * Register a class name, closure or fully configured item with the container,
      * we will handle dependencies at the time it is requested
      *
@@ -35,10 +42,24 @@ class Container implements ArrayAccess
             $object = $alias;
         }
 
+        // do we want to store this object as a singleton?
+        $this->values[$alias]['shared'] = $shared === true ?: false;
+
+        // if the $object is a string and $autoResolve is turned off we get a new
+        // Definition instance to allow further configuration of our object
+        if (is_string($object) && $this->autoResolve === false) {
+            $object = new Definition($object);
+        }
+
         // simply store whatever $object is in the container and resolve it
         // when it is requested
         $this->values[$alias]['object'] = $object;
-        $this->values[$alias]['shared'] = $shared === true ?: false;
+
+        // if the $object has been set as a Definition, return the instance of
+        // definition for any further runtime configuration
+        if ($object instanceof Definition) {
+            return $object;
+        }
     }
 
     /**
@@ -49,6 +70,8 @@ class Container implements ArrayAccess
      */
     public function resolve($alias)
     {
+        $object = null;
+
         if (! array_key_exists($alias, $this->values)) {
             $this->register($alias);
         }
@@ -58,24 +81,24 @@ class Container implements ArrayAccess
             return $this->shared[$alias];
         }
 
-        // if the item is a closure or pre-configured object we just return it
-        if ($this->values[$alias]['object'] instanceof Closure) {
+        // if the item is a factory closure or a Definition instance let's just invoke it
+        if ($this->values[$alias]['object'] instanceof Closure || $this->values[$alias]['object'] instanceof Definition) {
             $object = $this->values[$alias]['object']();
-
-            // do we need to store the closure result as shared?
-            if ($this->values[$alias]['shared'] === true) {
-                $this->shared[$alias] = $object;
-            }
-
-            return $object;
         }
 
-        // if we've got this far we need to build the object and resolve it's dependencies
-        $object = $this->build($alias, $this->values[$alias]['object']);
+        // if we've got this far and $autoResolve is turned on then we need to
+        // build the object and resolve it's dependencies
+        if ($this->autoResolve === true && is_null($object)) {
+            $object = $this->build($alias, $this->values[$alias]['object']);
+        }
 
         // do we need to save it as a shared item?
         if ($this->values[$alias]['shared'] === true) {
             $this->shared[$alias] = $object;
+        }
+
+        if (is_null($object)) {
+            throw new \RuntimeException('Unable to resolve an instance of ' . $alias);
         }
 
         return $object;
@@ -173,6 +196,18 @@ class Container implements ArrayAccess
         );
 
         return $result > 0 ? $matches : false;
+    }
+
+    /**
+     * Sets the $autoResolve option
+     *
+     * @param  boolean   $auto
+     * @return Container $this
+     */
+    public function autoResolve($auto)
+    {
+        $this->autoResolve = (bool) $auto;
+        return $this;
     }
 
     /**

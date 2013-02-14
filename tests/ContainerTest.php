@@ -1,6 +1,7 @@
 <?php
 
 include __DIR__ . '/../src/Orno/Di/Container.php';
+include __DIR__ . '/../src/Orno/Di/Definition.php';
 include 'assets/Foo.php';
 include 'assets/Bar.php';
 include 'assets/BazInterface.php';
@@ -12,7 +13,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 {
     public function testArrayAccess()
     {
-        $container = new Container;
+        $container = (new Container)->autoResolve(true);
         $container['test'] = function() { return 'Hello World'; };
         $this->assertTrue(isset($container['test']));
         $this->assertSame($container['test'], 'Hello World');
@@ -22,13 +23,13 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testAutomaticResolution()
     {
-        $container = new Container;
+        $container = (new Container)->autoResolve(true);
         $this->assertTrue($container->resolve('Assets\Baz') instanceof Assets\Baz);
     }
 
     public function testSharedResolution()
     {
-        $container = new Container;
+        $container = (new Container)->autoResolve(true);
         $container->register('Baz', 'Assets\Baz', true);
 
         $object1 = $container->resolve('Baz');
@@ -62,7 +63,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testAliasedDependencyResolution()
     {
-        $container = new Container;
+        $container = (new Container)->autoResolve(true);
 
         $container->register('Test', 'Assets\Baz');
         $container->register('Assets\BazInterface', 'Assets\Baz');
@@ -73,7 +74,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testMultipleNestedDependencies()
     {
-        $container = new Container;
+        $container = (new Container)->autoResolve(true);
 
         $foo = $container->resolve('Assets\Foo');
 
@@ -84,8 +85,30 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testImplementationIsInstanceOfInterface()
     {
-        $container = new Container;
+        $container = (new Container)->autoResolve(true);
 
         $this->assertTrue($container['Assets\Bar']->baz instanceof Assets\BazInterface);
+    }
+
+    public function testDefinitionInstanceConstructorInjection()
+    {
+        $container = new Container;
+
+        $container->register('bar', 'Assets\Bar')
+                  ->withArgument(new Assets\Baz);
+
+        $this->assertTrue($container->resolve('bar') instanceof Assets\Bar);
+        $this->assertTrue($container->resolve('bar')->baz instanceof Assets\BazInterface);
+    }
+
+    public function testDefinitionInstanceSetterInjection()
+    {
+        $container = new Container;
+
+        $container->register('bar', 'Assets\Bar')
+                  ->withMethodCall('setBaz', [new Assets\Baz]);
+
+        $this->assertTrue($container->resolve('bar') instanceof Assets\Bar);
+        $this->assertTrue($container->resolve('bar')->baz instanceof Assets\BazInterface);
     }
 }
