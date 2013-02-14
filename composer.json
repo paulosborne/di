@@ -1,6 +1,9 @@
 {
     "name": "orno/di",
-    "description": "Orno Di is a small but powerful dependency injection container that allows you to decouple components in your application in order to write clean and testable code.",
+    "description": "Orno Di is a small but powerful dependency injection container with automatic resolution of dependencies.",
+    "keywords": ["orno", "di", "dependency", "injection", "container"],
+    "homepage": "http://www.happyaccidents.me/code/dependency-injection",
+    "license": "MIT",
     "require": {
         "php": ">=5.4"
     },
@@ -9,5 +12,6 @@
             "name": "Phil Bennett",
             "email": "philipobenito@gmail.com"
         }
-    ]
+    ],
+    "minimum-stability": "dev"
 }
