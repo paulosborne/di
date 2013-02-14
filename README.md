@@ -8,7 +8,8 @@ Orno\Di is a small but powerful dependency injection container that allows you t
 > Using a **Dependency Injection Container** is not the same as using the **Dependency Injection Pattern**. Be careful not to create a hard dependency on the container and be aware of the slight decline in performance it will create. Using Orno\Di correctly will allow you to create a good balance between fast, easy development of de-coupled, testable code and performance.
 
 ### Usage
-- [Factory Closures](#factory-closure)
+- [Factory Closures](#factory-closures)
+- [Setting Constructor Arguments](#setting-constructor-arguments)
 
 ### Factory Closures
 
@@ -41,3 +42,39 @@ $container->register('foo', function() {
 $foo = $container->resolve('foo');
 ```
 
+### Setting Constructor Arguments
+
+The container can be used to register objects at run time and provide constructor arguments such as dependencies or config items. For example, if we have a `Session` object that depends on an implementation of a `StorageInterface` and also requires a session key string. We could do the following:
+
+```php
+class Session
+{
+    protect $storage;
+    protected $sessionKey;
+    public function __construct(StorageInterface $storage, $sessionKey)
+    {
+        $this->storage    = $storage;
+        $this->sessionKey = $sessionKey;
+    }
+}
+
+interface StorageInterface
+{
+    // ..
+}
+
+class Storage implements StorageInterface
+{
+    // ..
+}
+
+$container = new Orno\Di\Container;
+
+$container->register('session', 'Session')
+          ->withArguments([
+            new Storage,
+            'my_session_key'
+          ]);
+
+$session = $container->resolve('storage');
+```
