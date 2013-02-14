@@ -11,6 +11,7 @@ Orno\Di is a small but powerful dependency injection container that allows you t
 - [Factory Closures](#factory-closures)
 - [Constructor Injection](#constructor-injection)
 - [Setter Injection](#setter-injection)
+- [Automatic Resolution of Dependencies](#automatic-resolution-of-dependencies)
 
 ### Factory Closures
 
@@ -116,3 +117,56 @@ $session = $container->resolve('storage');
 ```
 
 This has the added benefit of being able to manipulate the behaviour of the object with optional setters. Only call the methods you need for this instance of the object.
+
+### Automatic Resolution of Dependencies
+
+Orno\Di has the power to automatically resolve your objects and all of their dependencies recursively by inspecting the type hints of your constructor arguments. Unfortunately, this method of resolution has a few small limitations but is great for smaller apps. First of all, you are limited to constructor injection and secondly, all injections **must** be objects.
+
+```php
+class Foo
+{
+    public $bar;
+    public $baz;
+    public function __construct(Bar $bar, Baz $baz)
+    {
+        $this->bar = $bar;
+        $this->baz = $baz;
+    }
+}
+
+class Bar
+{
+    public $bam;
+    public function __construct(Bam $bam)
+    {
+        $this->bam = $bam;
+    }
+}
+
+class Baz
+{
+    // ..
+}
+
+class Bam
+{
+    // ..
+}
+```
+
+In the above code, `Foo` has 2 dependencies `Bar` and `Baz`, `Bar` has a further dependency of `Bam`. In a normal cas you would have to do the following to return a fully configured instance of `Foo`.
+
+```php
+$bam = new Bam;
+$baz = new Baz;
+$bar = new Bar($bam);
+$foo = new Foo($bar, $baz);
+```
+
+With nested dependencies, this can become quite cumbersome and hard to keep track of. With this container, to return a fully configured instance of `Foo` it is as simple as turning on auto resolution and requesting and instance of `Foo`.
+
+```php
+$container = (new Orno\Di\Container)->autoResolve(true);
+
+$foo = $container->resolve('Foo');
+```
