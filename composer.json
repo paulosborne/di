@@ -2,7 +2,7 @@
     "name": "orno/di",
     "description": "Orno Di is a small but powerful dependency injection container with automatic resolution of dependencies.",
     "keywords": ["orno", "di", "dependency", "injection", "container"],
-    "homepage": "http://www.happyaccidents.me/code/dependency-injection",
+    "homepage": "http://github.com/orno/di",
     "license": "MIT",
     "require": {
         "php": ">=5.4"
