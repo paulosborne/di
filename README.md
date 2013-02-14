@@ -13,25 +13,28 @@ Orno\Di is a small but powerful dependency injection container that allows you t
 
 The most performant way to use Orno\Di is to use factory closures/anonymous functions to build your objects. By registering a closure that returns a fully configured object, when resolved, your object will be lazy loaded as and when you need access to it.
 
-    class Foo
+Consider an object `Foo` that depends on another object `Bar`. The following will return an instance of `Foo` containing a member `bar` that contains an instance of `Bar`.
+
+```php
+class Foo
+{
+    public $bar;
+    public function __construct(Bar $bar)
     {
-        public $bar;
-        public function __construct(Bar $bar)
-        {
-            $this->bar = $bar
-        }
+        $this->bar = $bar
     }
+}
 
-    class Bar
-    {
-        // ..
-    }
+class Bar
+{
+    // ..
+}
 
-    $container = new Orno\Di\Container;
+$container = new Orno\Di\Container;
 
-    $container->register(function() {
-        $bar = new Bar;
-        return new Foo($bar);
-    });
-
+$container->register(function() {
+    $bar = new Bar;
+    return new Foo($bar);
+});
+```
 
