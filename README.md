@@ -9,7 +9,8 @@ Orno\Di is a small but powerful dependency injection container that allows you t
 
 ### Usage
 - [Factory Closures](#factory-closures)
-- [Setting Constructor Arguments](#setting-constructor-arguments)
+- [Constructor Injection](#constructor-injection)
+- [Setter Injection](#setter-injection)
 
 ### Factory Closures
 
@@ -42,14 +43,14 @@ $container->register('foo', function() {
 $foo = $container->resolve('foo');
 ```
 
-### Setting Constructor Arguments
+### Constructor Injection
 
 The container can be used to register objects at run time and provide constructor arguments such as dependencies or config items. For example, if we have a `Session` object that depends on an implementation of a `StorageInterface` and also requires a session key string. We could do the following:
 
 ```php
 class Session
 {
-    protect $storage;
+    protected $storage;
     protected $sessionKey;
     public function __construct(StorageInterface $storage, $sessionKey)
     {
@@ -71,10 +72,47 @@ class Storage implements StorageInterface
 $container = new Orno\Di\Container;
 
 $container->register('session', 'Session')
-          ->withArguments([
-            new Storage,
-            'my_session_key'
-          ]);
+          ->withArguments([new Storage, 'my_session_key']);
 
 $session = $container->resolve('storage');
 ```
+
+### Setter Injection
+
+If you prefer setter injection to constructor injection, a few minor alterations can be made to accomodate this.
+
+```php
+class Session
+{
+    protected $storage;
+    protected $sessionKey;
+    public function setStorage(StorageInterface $storage)
+    {
+        $this->storage = $storage;
+    }
+    public function setSessionKey($sessionKey)
+    {
+        $this->sessionKey = $sessionKey;
+    }
+}
+
+interface StorageInterface
+{
+    // ..
+}
+
+class Storage implements StorageInterface
+{
+    // ..
+}
+
+$container = new Orno\Di\Container;
+
+$container->register('session', 'Session')
+          ->withMethodCall('setStorage', [new Storage])
+          ->withMethodCall('setSessionKey', ['my_session_key']);
+
+$session = $container->resolve('storage');
+```
+
+This has the added benefit of being able to manipulate the behaviour of the object with optional setters. Only call the methods you need for this instance of the object.
