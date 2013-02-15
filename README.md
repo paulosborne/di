@@ -1,69 +1,29 @@
-# Dependency Injection
+# Orno\Di - PHP Dependency Injection Container
 
 [![Buildi Status](https://travis-ci.org/orno/di.png?branch=master)](https://travis-ci.org/orno/di)
 
-Orno\Di is a small but powerful dependency injection container that allows you to decouple components in your application in order to write clean and testable code.
+Orno\Di is a small but powerful dependency injection container that allows you to decouple components in your application in order to write clean and testable code. The container can automatically resolve dependencies of objects resolved through it.
 
-- [Registering Objects](#registering-objects)
-- [Aliasing Objects](#aliasing-objects)
-- [Shared Objects](#shared-objects)
-- [Resolving Items From the Container](#resolving-items-from-the-container)
-- [Dependencies](#dependencies)
-- [Implementing Interfaces](#implementing-interfaces)
+> ### Note
+> Using a **Dependency Injection Container** is not the same as using the **Dependency Injection Pattern**. Be careful not to create a hard dependency on the container and be aware of the slight decline in performance it will create. Using Orno\Di correctly will allow you to create a good balance between fast, easy development of de-coupled, testable code and performance.
 
-### Registering Objects
+### Usage
+- [Factory Closures](#factory-closures)
+- [Constructor Injection](#constructor-injection)
+- [Setter Injection](#setter-injection)
+- [Automatic Resolution of Dependencies](#automatic-resolution-of-dependencies)
+- [Annotations](#annotations)
 
-Objects can be defined as anonymous functions or a string of the fully qualified namespace.
+### Factory Closures
 
-```php
-$container = new Orno\Di\Container;
+The most performant way to use Orno\Di is to use factory closures/anonymous functions to build your objects. By registering a closure that returns a fully configured object, when resolved, your object will be lazy loaded as and when you need access to it.
 
-$container->register('Foo', function() {
-    return new Foo;
-});
-
-$container->register('Bar');
-```
-
-### Aliasing Objects
-
-If your object is a fully qualified namespace, you can easily alias the object to a shorter name for easier access when resolving.
-
-```php
-$container->register('Foo', 'Full\Namespace\Foo')
-```
-
-### Shared Objects
-
-Objects can be registered as singletons/shared objects by passing `true` as a third parameter to the `register` method. The same can be done with an anonymous function and the container will save a shared definition of that closure.
-
-```php
-$container->register('Foo', 'Full\Namespace\Foo', true);
-
-$container->register('Bar', function() {
-    return new Bar;
-}, true);
-```
-
-### Resolving Items From the Container
-
-Items can be resolved in two ways. By calling the `resolve` method or using `ArrayAccess` on the container object.
-
-```php
-$foo = $container->resolve('Foo');
-
-$bar = $container['Bar'];
-```
-
-### Dependencies
-
-Dependencies can be resolved by type hinting the object you want to inject in your classes constructor.
+Consider an object `Foo` that depends on another object `Bar`. The following will return an instance of `Foo` containing a member `bar` that contains an instance of `Bar`.
 
 ```php
 class Foo
 {
     public $bar;
-
     public function __construct(Bar $bar)
     {
         $this->bar = $bar;
@@ -72,55 +32,177 @@ class Foo
 
 class Bar
 {
-    public function helloWorld()
+    // ..
+}
+
+$container = new Orno\Di\Container;
+
+$container->register('foo', function() {
+    $bar = new Bar;
+    return new Foo($bar);
+});
+
+$foo = $container->resolve('foo');
+```
+
+### Constructor Injection
+
+The container can be used to register objects at run time and provide constructor arguments such as dependencies or config items. For example, if we have a `Session` object that depends on an implementation of a `StorageInterface` and also requires a session key string. We could do the following:
+
+```php
+class Session
+{
+    protected $storage;
+    protected $sessionKey;
+    public function __construct(StorageInterface $storage, $sessionKey)
     {
-        return 'Hello World!';
+        $this->storage    = $storage;
+        $this->sessionKey = $sessionKey;
     }
 }
 
-$foo = $container->resolve('Foo');
+interface StorageInterface
+{
+    // ..
+}
 
-$foo->bar->helloWorld();
+class Storage implements StorageInterface
+{
+    // ..
+}
+
+$container = new Orno\Di\Container;
+
+$container->register('session', 'Session')
+          ->withArguments([new Storage, 'my_session_key']);
+
+$session = $container->resolve('storage');
 ```
 
-The snippet above will assign the object `Foo` to `$foo` which will contain a property `$bar` containing the object `Bar`.
+### Setter Injection
 
-This could be extended and the container will resolve ALL nested dependencies.
-
-### Implementations of Interfaces
-
-What happens if the dependency you want to inject is an implementation of an interface? The container looks at your constructors `@param` annotations for a concrete implementation of the type hinted interface and injects that object.
+If you prefer setter injection to constructor injection, a few minor alterations can be made to accomodate this.
 
 ```php
-class Bar
+class Session
 {
-    public $baz;
-
-    /**
-     * @param Baz $baz
-     */
-    public function __construct(BazInterface $baz)
+    protected $storage;
+    protected $sessionKey;
+    public function setStorage(StorageInterface $storage)
     {
+        $this->storage = $storage;
+    }
+    public function setSessionKey($sessionKey)
+    {
+        $this->sessionKey = $sessionKey;
+    }
+}
+
+interface StorageInterface
+{
+    // ..
+}
+
+class Storage implements StorageInterface
+{
+    // ..
+}
+
+$container = new Orno\Di\Container;
+
+$container->register('session', 'Session')
+          ->withMethodCall('setStorage', [new Storage])
+          ->withMethodCall('setSessionKey', ['my_session_key']);
+
+$session = $container->resolve('storage');
+```
+
+This has the added benefit of being able to manipulate the behaviour of the object with optional setters. Only call the methods you need for this instance of the object.
+
+### Automatic Resolution of Dependencies
+
+Orno\Di has the power to automatically resolve your objects and all of their dependencies recursively by inspecting the type hints of your constructor arguments. Unfortunately, this method of resolution has a few small limitations but is great for smaller apps. First of all, you are limited to constructor injection and secondly, all injections **must** be objects.
+
+```php
+class Foo
+{
+    public $bar;
+    public $baz;
+    public function __construct(Bar $bar, Baz $baz)
+    {
+        $this->bar = $bar;
         $this->baz = $baz;
     }
 }
 
-class Baz implements BazInterface
+class Bar
 {
-    public function helloWorld()
+    public $bam;
+    public function __construct(Bam $bam)
     {
-        return 'Hello World!';
+        $this->bam = $bam;
     }
 }
 
-interface BazInterface
+class Baz
 {
-    public function helloWorld();
+    // ..
 }
 
-$bar = $container->resolve('Bar');
-
-$bar->baz->helloWorld();
+class Bam
+{
+    // ..
+}
 ```
 
-Again, the above code will resolve all nested dependencies and assign the `Bar` object to `$bar` having the property `$baz` which will contain `Baz` a concrete implementation of `BazInterface`.
+In the above code, `Foo` has 2 dependencies `Bar` and `Baz`, `Bar` has a further dependency of `Bam`. In a normal case you would have to do the following to return a fully configured instance of `Foo`.
+
+```php
+$bam = new Bam;
+$baz = new Baz;
+$bar = new Bar($bam);
+$foo = new Foo($bar, $baz);
+```
+
+With nested dependencies, this can become quite cumbersome and hard to keep track of. With the container, to return a fully configured instance of `Foo` it is as simple as turning on auto resolution and requesting and instance of `Foo`.
+
+```php
+$container = (new Orno\Di\Container)->autoResolve(true);
+
+$foo = $container->resolve('Foo');
+```
+
+### Annotations
+
+When using automatic resolution, what happens when our requested object has a dependency that is an implementation of an interface? If we look back to our `Session` object in the *Constructor Injection* example, it requires an implementation of `StorageInterface`. With discreet annotations in your doc block it is easy to specify what implementation you want to inject.
+
+```php
+class Session
+{
+    protected $storage;
+
+    /**
+     * @param Storage $storage
+     */
+    public function __construct(StorageInterface $storage)
+    {
+        $this->storage = $storage;
+    }
+}
+
+interface StorageInterface
+{
+    // ..
+}
+
+class Storage implements StorageInterface
+{
+    // ..
+}
+
+$container = (new Orno\Di\Container)->autoResolve(true);
+
+$session = $container->resolve('Session');
+```
+
+The container looks simply at the `@param` annotation so as to not force you to change the way you write your code. In this example the container sees that `$session` wants the object `Session` and injects it automatically.
