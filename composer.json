@@ -13,5 +13,10 @@
             "email": "philipobenito@gmail.com"
         }
     ],
+    "autoload": {
+        "psr-0": {
+            "Orno\\Di": "src/"
+        }
+    },
     "minimum-stability": "dev"
 }
