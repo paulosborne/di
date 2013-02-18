@@ -1,9 +1,19 @@
 <?php namespace Orno\Di;
 
-use Closure, ArrayAccess, ReflectionMethod, ReflectionClass;
+use Closure;
+use ArrayAccess;
+use ReflectionMethod;
+use ReflectionClass;
 
 class Container implements ArrayAccess
 {
+    /**
+     * Sad but true static instance
+     *
+     * @var Orno\Di\Container
+     */
+    protected static $instance = null;
+
     /**
      * Items registered with the container
      *
@@ -24,6 +34,61 @@ class Container implements ArrayAccess
      * @var boolean
      */
     protected $autoResolve = false;
+
+    /**
+     * Constructor
+     *
+     * @param array $config
+     */
+    public function __construct(array $config = [])
+    {
+        self::$instance = $this;
+
+        if (! empty($config)) {
+            $this->setConfig($config);
+        }
+    }
+
+    /**
+     * Singleton method :-(
+     *
+     * @return Container $this
+     */
+    public static function getContainer()
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    /**
+     * Set configuration for the container
+     *
+     * @param  array     $config
+     * @return Container $this
+     */
+    public function setConfig(array $config = [])
+    {
+        foreach ($config as $alias => $options) {
+            $shared = (array_key_exists('shared', $options)) ? (bool) $options['shared'] : false;
+
+            $object = (array_key_exists('object', $options)) ? $options['object'] : $alias;
+
+            $object = $this->register($alias, $object, $shared);
+
+            if (array_key_exists('arguments', $options)) {
+                $object->withArguments((array) $options['arguments']);
+            }
+
+            if (array_key_exists('methods', $options)) {
+                $object->withMethodCalls((array) $options['methods']);
+            }
+        }
+
+        return $this;
+    }
 
     /**
      * Register a class name, closure or fully configured item with the container,
@@ -62,6 +127,11 @@ class Container implements ArrayAccess
         }
     }
 
+    public function registered($key)
+    {
+        return array_key_exists($key, $this->values);
+    }
+
     /**
      * Resolve and return the requested item
      *
@@ -82,7 +152,9 @@ class Container implements ArrayAccess
         }
 
         // if the item is a factory closure or a Definition instance let's just invoke it
-        if ($this->values[$alias]['object'] instanceof Closure || $this->values[$alias]['object'] instanceof Definition) {
+        if ($this->values[$alias]['object'] instanceof Closure ||
+            $this->values[$alias]['object'] instanceof Definition
+        ) {
             $object = $this->values[$alias]['object']();
         }
 
@@ -192,7 +264,8 @@ class Container implements ArrayAccess
 
         $result = preg_match_all(
             '/@param[\t\s]*(?P<type>[^\t\s]*)[\t\s]*\$(?P<name>[^\t\s]*)/sim',
-            $docComment, $matches
+            $docComment,
+            $matches
         );
 
         return $result > 0 ? $matches : false;
