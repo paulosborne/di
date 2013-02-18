@@ -97,8 +97,11 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $container->register('bar', 'Assets\Bar')
                   ->withArgument(new Assets\Baz);
 
-        $this->assertTrue($container->resolve('bar') instanceof Assets\Bar);
-        $this->assertTrue($container->resolve('bar')->baz instanceof Assets\BazInterface);
+        $bar = $container->resolve('bar');
+
+        $this->assertTrue($bar instanceof Assets\Bar);
+        $this->assertTrue($bar->baz instanceof Assets\Baz);
+        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
     }
 
     public function testDefinitionInstanceSetterInjection()
@@ -108,7 +111,82 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $container->register('bar', 'Assets\Bar')
                   ->withMethodCall('setBaz', [new Assets\Baz]);
 
-        $this->assertTrue($container->resolve('bar') instanceof Assets\Bar);
-        $this->assertTrue($container->resolve('bar')->baz instanceof Assets\BazInterface);
+        $bar = $container->resolve('bar');
+
+        $this->assertTrue($bar instanceof Assets\Bar);
+        $this->assertTrue($bar->baz instanceof Assets\Baz);
+        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
+    }
+
+    public function testConstructorArgumentAsString()
+    {
+        $container = new Container;
+
+        $container->register('baz', 'Assets\Baz');
+        $container->register('bar', 'Assets\Bar')
+                  ->withArgument('baz');
+
+        $bar = $container->resolve('bar');
+
+        $this->assertTrue($bar instanceof Assets\Bar);
+        $this->assertTrue($bar->baz instanceof Assets\Baz);
+        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
+    }
+
+    public function testMethodArgumentsAsString()
+    {
+        $container = new Container;
+
+        $container->register('baz', 'Assets\Baz');
+        $container->register('bar', 'Assets\Bar')
+                  ->withMethodCall('setBaz', ['baz']);
+
+        $bar = $container->resolve('bar');
+
+        $this->assertTrue($bar instanceof Assets\Bar);
+        $this->assertTrue($bar->baz instanceof Assets\Baz);
+        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
+    }
+
+    public function testSetConfigWithConstructorInjection()
+    {
+        $map = [
+            'Assets\Foo' => [
+                'arguments' => ['Assets\Bar']
+            ],
+            'Assets\Bar' => [
+                'arguments' => ['Assets\Baz']
+            ],
+            'Assets\Baz' => []
+        ];
+
+        $container = new Container($map);
+
+        $foo = $container->resolve('Assets\Foo');
+
+        $this->assertTrue($foo instanceof Assets\Foo);
+        $this->assertTrue($foo->bar instanceof Assets\Bar);
+        $this->assertTrue($foo->bar->baz instanceof Assets\Baz);
+    }
+
+    public function testSetConfigWithSetterInjection()
+    {
+        $map = [
+            'Assets\Bar' => [
+                'methods' => [
+                    'setBaz' => [
+                        'Assets\Baz'
+                    ]
+                ]
+            ],
+            'Assets\Baz' => []
+        ];
+
+        $container = new Container($map);
+
+        $bar = $container->resolve('Assets\Bar');
+
+        $this->assertTrue($bar instanceof Assets\Bar);
+        $this->assertTrue($bar->baz instanceof Assets\Baz);
     }
 }
