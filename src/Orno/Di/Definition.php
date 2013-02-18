@@ -1,9 +1,17 @@
 <?php namespace Orno\Di;
 
-use ReflectionClass, ReflectionMethod;
+use ReflectionClass;
+use ReflectionMethod;
 
 class Definition
 {
+    /**
+     * Instance of the container object
+     *
+     * @var Orno\Di\Container
+     */
+    protected $container;
+
     /**
      * The fully qualified namespace of the instance to return
      *
@@ -33,6 +41,7 @@ class Definition
     public function __construct($class = null)
     {
         $this->class = $class;
+        $this->container = Container::getContainer();
     }
 
     /**
@@ -50,7 +59,18 @@ class Definition
 
         if ($this->hasArguments()) {
             $reflectionClass = new ReflectionClass($this->class);
-            $object = $reflectionClass->newInstanceArgs($this->arguments);
+
+            $arguments = [];
+
+            foreach ($this->arguments as $arg) {
+                if (is_string($arg) && $this->container->registered($arg)) {
+                    $arguments[] = $this->container->resolve($arg);
+                    continue;
+                }
+                $arguments[] = $arg;
+            }
+
+            $object = $reflectionClass->newInstanceArgs($arguments);
         } else {
             $object = new $this->class;
         }
@@ -58,7 +78,18 @@ class Definition
         if ($this->hasMethodCalls()) {
             foreach ($this->methods as $method => $args) {
                 $reflectionMethod = new ReflectionMethod($object, $method);
-                $reflectionMethod->invokeArgs($object, $args);
+
+                $methodArgs = [];
+
+                foreach ((array) $args as $arg) {
+                    if (is_string($arg) && $this->container->registered($arg)) {
+                        $methodArgs[] = $this->container->resolve($arg);
+                        continue;
+                    }
+                    $methodArgs[] = $arg;
+                }
+
+                $reflectionMethod->invokeArgs($object, $methodArgs);
             }
         }
 
