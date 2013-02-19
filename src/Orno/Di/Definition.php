@@ -52,6 +52,18 @@ class Definition implements ContainerAwareInterface
             throw new \RuntimeException('The definition has no class associated with it');
         }
 
+        $object = $this->handleConstructorInjection();
+
+        return $this->handleMethodCalls($object);
+    }
+
+    /**
+     * Handles any arguments to be injected into the container
+     *
+     * @return object
+     */
+    public function handleConstructorInjection()
+    {
         if ($this->hasArguments()) {
             $reflectionClass = new ReflectionClass($this->class);
 
@@ -70,6 +82,17 @@ class Definition implements ContainerAwareInterface
             $object = new $this->class;
         }
 
+        return $object;
+    }
+
+    /**
+     * Calls all methods that are configured on the object with injected arguments
+     *
+     * @param  object $object
+     * @return object
+     */
+    public function handleMethodCalls($object)
+    {
         if ($this->hasMethodCalls()) {
             foreach ($this->methods as $method => $args) {
                 $reflectionMethod = new ReflectionMethod($object, $method);
