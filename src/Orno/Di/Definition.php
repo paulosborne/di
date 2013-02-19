@@ -5,12 +5,7 @@ use ReflectionMethod;
 
 class Definition implements ContainerAwareInterface
 {
-    /**
-     * Instance of the container object
-     *
-     * @var Orno\Di\Container
-     */
-    protected $container;
+    use ContainerAwareTrait;
 
     /**
      * The fully qualified namespace of the instance to return
@@ -42,16 +37,6 @@ class Definition implements ContainerAwareInterface
     {
         $this->class = $class;
         $this->container = $this->getContainer();
-    }
-
-    /**
-     * Get an instance of the container
-     *
-     * @return Orno\Di\Container
-     */
-    public function getContainer()
-    {
-        return Container::getContainer();
     }
 
     /**
