@@ -3,7 +3,7 @@
 use ReflectionClass;
 use ReflectionMethod;
 
-class Definition
+class Definition implements ContainerAwareInterface
 {
     /**
      * Instance of the container object
@@ -41,7 +41,17 @@ class Definition
     public function __construct($class = null)
     {
         $this->class = $class;
-        $this->container = Container::getContainer();
+        $this->container = $this->getContainer();
+    }
+
+    /**
+     * Get an instance of the container
+     *
+     * @return Orno\Di\Container
+     */
+    public function getContainer()
+    {
+        return Container::getContainer();
     }
 
     /**
@@ -105,6 +115,7 @@ class Definition
     public function setClass($class)
     {
         $this->class = $class;
+
         return $this;
     }
 
@@ -127,6 +138,7 @@ class Definition
     public function withArgument($argument)
     {
         $this->arguments[] = $argument;
+
         return $this;
     }
 
@@ -141,6 +153,7 @@ class Definition
         foreach ($arguments as $argument) {
             $this->withArgument($argument);
         }
+
         return $this;
     }
 
@@ -164,6 +177,7 @@ class Definition
     public function withMethodCall($method, array $arguments = [])
     {
         $this->methods[$method] = $arguments;
+
         return $this;
     }
 
@@ -178,6 +192,7 @@ class Definition
         foreach ($methods as $method => $arguments) {
             $this->withMethodCall($method, $arguments);
         }
+
         return $this;
     }
 
