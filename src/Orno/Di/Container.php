@@ -5,7 +5,7 @@ use ArrayAccess;
 use ReflectionMethod;
 use ReflectionClass;
 
-class Container implements ArrayAccess
+class Container implements ContainerInterface, ArrayAccess
 {
     /**
      * Sad but true static instance
