@@ -5,6 +5,8 @@ use ReflectionMethod;
 
 class Definition implements ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+    
     /**
      * The fully qualified namespace of the instance to return
      *
