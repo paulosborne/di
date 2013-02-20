@@ -5,8 +5,6 @@ use ReflectionMethod;
 
 class Definition implements ContainerAwareInterface
 {
-    use ContainerAwareTrait;
-
     /**
      * The fully qualified namespace of the instance to return
      *
@@ -33,10 +31,10 @@ class Definition implements ContainerAwareInterface
      *
      * @param string $class
      */
-    public function __construct($class = null)
+    public function __construct($class = null, Container $container)
     {
         $this->class = $class;
-        $this->container = $this->getContainer();
+        $this->container = $container;
     }
 
     /**
