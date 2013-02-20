@@ -2,7 +2,7 @@
 
 interface ContainerInterface
 {
-    public function register();
+    public function register($alias, $object = null, $shared = false);
 
-    public function resolve();
+    public function resolve($alias);
 }
