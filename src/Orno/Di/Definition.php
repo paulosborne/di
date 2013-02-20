@@ -31,7 +31,7 @@ class Definition implements ContainerAwareInterface
      *
      * @param string $class
      */
-    public function __construct($class = null, Container $container)
+    public function __construct($class = null, ContainerInterface $container)
     {
         $this->class = $class;
         $this->container = $container;
