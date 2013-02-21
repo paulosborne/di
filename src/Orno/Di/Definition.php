@@ -3,7 +3,7 @@
 use ReflectionClass;
 use ReflectionMethod;
 
-class Definition implements ContainerAwareInterface
+class Definition
 {
     use ContainerAwareTrait;
 
