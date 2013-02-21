@@ -1,5 +1,6 @@
 <?php
 
+include __DIR__ . '/../src/Orno/Di/ContainerInterface.php';
 include __DIR__ . '/../src/Orno/Di/Container.php';
 include __DIR__ . '/../src/Orno/Di/ContainerAwareTrait.php';
 include __DIR__ . '/../src/Orno/Di/Definition.php';
