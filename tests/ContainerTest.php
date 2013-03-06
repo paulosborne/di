@@ -50,6 +50,16 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $this->assertSame($container->resolve('Test'), 'Hello World');
     }
 
+    public function testClosureResolutionWithArgs()
+    {
+        $container = new Container;
+        $container->register('Test', function($hello) {
+            return $hello;
+        });
+
+        $this->assertSame($container->resolve('Test', ['Hello World']), 'Hello World');
+    }
+
     public function testSharedClosureResolution()
     {
         $container = new Container;
