@@ -1,15 +1,12 @@
-<?php
-
-include __DIR__ . '/../src/Orno/Di/ContainerInterface.php';
-include __DIR__ . '/../src/Orno/Di/Container.php';
-include __DIR__ . '/../src/Orno/Di/ContainerAwareTrait.php';
-include __DIR__ . '/../src/Orno/Di/Definition.php';
-include 'assets/Foo.php';
-include 'assets/Bar.php';
-include 'assets/BazInterface.php';
-include 'assets/Baz.php';
+<?php namespace Tests;
 
 use Orno\Di\Container;
+use PHPUnit_Framework_TestCase;
+use stdClass;
+use Assets\Foo;
+use Assets\Bar;
+use Assets\Baz;
+use Assets\BazInterface;
 
 class ContainerTest extends PHPUnit_Framework_TestCase
 {
@@ -26,7 +23,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     public function testAutomaticResolution()
     {
         $container = (new Container)->autoResolve(true);
-        $this->assertTrue($container->resolve('Assets\Baz') instanceof Assets\Baz);
+        $this->assertTrue($container->resolve('Assets\Baz') instanceof Baz);
     }
 
     public function testSharedResolution()
@@ -80,8 +77,8 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $container->register('Test', 'Assets\Baz');
         $container->register('Assets\BazInterface', 'Assets\Baz');
 
-        $this->assertTrue($container->resolve('Test') instanceof Assets\Baz);
-        $this->assertTrue($container->resolve('Assets\BazInterface') instanceof Assets\Baz);
+        $this->assertTrue($container->resolve('Test') instanceof Baz);
+        $this->assertTrue($container->resolve('Assets\BazInterface') instanceof Baz);
     }
 
     public function testMultipleNestedDependencies()
@@ -90,16 +87,16 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
         $foo = $container->resolve('Assets\Foo');
 
-        $this->assertTrue($foo instanceof Assets\Foo);
-        $this->assertTrue($foo->bar instanceof Assets\Bar);
-        $this->assertTrue($foo->bar->baz instanceof Assets\Baz);
+        $this->assertTrue($foo instanceof Foo);
+        $this->assertTrue($foo->bar instanceof Bar);
+        $this->assertTrue($foo->bar->baz instanceof Baz);
     }
 
     public function testImplementationIsInstanceOfInterface()
     {
         $container = (new Container)->autoResolve(true);
 
-        $this->assertTrue($container['Assets\Bar']->baz instanceof Assets\BazInterface);
+        $this->assertTrue($container['Assets\Bar']->baz instanceof BazInterface);
     }
 
     public function testDefinitionInstanceConstructorInjection()
@@ -107,13 +104,13 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $container = new Container;
 
         $container->register('bar', 'Assets\Bar')
-                  ->withArgument(new Assets\Baz);
+                  ->withArgument(new Baz);
 
         $bar = $container->resolve('bar');
 
-        $this->assertTrue($bar instanceof Assets\Bar);
-        $this->assertTrue($bar->baz instanceof Assets\Baz);
-        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
+        $this->assertTrue($bar instanceof Bar);
+        $this->assertTrue($bar->baz instanceof Baz);
+        $this->assertTrue($bar->baz instanceof BazInterface);
     }
 
     public function testDefinitionInstanceSetterInjection()
@@ -121,13 +118,13 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $container = new Container;
 
         $container->register('bar', 'Assets\Bar')
-                  ->withMethodCall('setBaz', [new Assets\Baz]);
+                  ->withMethodCall('setBaz', [new Baz]);
 
         $bar = $container->resolve('bar');
 
-        $this->assertTrue($bar instanceof Assets\Bar);
-        $this->assertTrue($bar->baz instanceof Assets\Baz);
-        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
+        $this->assertTrue($bar instanceof Bar);
+        $this->assertTrue($bar->baz instanceof Baz);
+        $this->assertTrue($bar->baz instanceof BazInterface);
     }
 
     public function testConstructorArgumentAsString()
@@ -140,9 +137,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
         $bar = $container->resolve('bar');
 
-        $this->assertTrue($bar instanceof Assets\Bar);
-        $this->assertTrue($bar->baz instanceof Assets\Baz);
-        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
+        $this->assertTrue($bar instanceof Bar);
+        $this->assertTrue($bar->baz instanceof Baz);
+        $this->assertTrue($bar->baz instanceof BazInterface);
     }
 
     public function testMethodArgumentsAsString()
@@ -155,9 +152,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
         $bar = $container->resolve('bar');
 
-        $this->assertTrue($bar instanceof Assets\Bar);
-        $this->assertTrue($bar->baz instanceof Assets\Baz);
-        $this->assertTrue($bar->baz instanceof Assets\BazInterface);
+        $this->assertTrue($bar instanceof Bar);
+        $this->assertTrue($bar->baz instanceof Baz);
+        $this->assertTrue($bar->baz instanceof BazInterface);
     }
 
     public function testSetConfigWithConstructorInjection()
@@ -176,9 +173,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
         $foo = $container->resolve('Assets\Foo');
 
-        $this->assertTrue($foo instanceof Assets\Foo);
-        $this->assertTrue($foo->bar instanceof Assets\Bar);
-        $this->assertTrue($foo->bar->baz instanceof Assets\Baz);
+        $this->assertTrue($foo instanceof Foo);
+        $this->assertTrue($foo->bar instanceof Bar);
+        $this->assertTrue($foo->bar->baz instanceof Baz);
     }
 
     public function testSetConfigWithSetterInjection()
@@ -198,7 +195,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
         $bar = $container->resolve('Assets\Bar');
 
-        $this->assertTrue($bar instanceof Assets\Bar);
-        $this->assertTrue($bar->baz instanceof Assets\Baz);
+        $this->assertTrue($bar instanceof Bar);
+        $this->assertTrue($bar->baz instanceof Baz);
     }
 }
