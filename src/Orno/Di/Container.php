@@ -127,6 +127,12 @@ class Container implements ContainerInterface, ArrayAccess
         }
     }
 
+    /**
+     * Check if an alias is registered with the container
+     *
+     * @param  string $key
+     * @return boolean
+     */
     public function registered($key)
     {
         return array_key_exists($key, $this->values);
