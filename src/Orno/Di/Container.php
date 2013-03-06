@@ -142,9 +142,10 @@ class Container implements ContainerInterface, ArrayAccess
      * Resolve and return the requested item
      *
      * @param  string $alias
+     * @param  array  $args
      * @return mixed
      */
-    public function resolve($alias)
+    public function resolve($alias, array $args = [])
     {
         $object = null;
 
@@ -157,10 +158,13 @@ class Container implements ContainerInterface, ArrayAccess
             return $this->shared[$alias];
         }
 
-        // if the item is a factory closure or a Definition instance let's just invoke it
-        if ($this->values[$alias]['object'] instanceof Closure ||
-            $this->values[$alias]['object'] instanceof Definition
-        ) {
+        // if the item is a factory closure we call the function with args
+        if ($this->values[$alias]['object'] instanceof Closure) {
+            $object = call_user_func_array($this->values[$alias]['object'], $args);
+        }
+
+        // if the item is an instance of Definition we invoke it
+        if ($this->values[$alias]['object'] instanceof Definition) {
             $object = $this->values[$alias]['object']();
         }
 
