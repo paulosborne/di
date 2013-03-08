@@ -1,6 +1,8 @@
 <?php namespace Tests;
 
 use Orno\Di\Container;
+use Orno\Di\Definition;
+use Orno\Di\ContainerAwareTrait;
 use PHPUnit_Framework_TestCase;
 use stdClass;
 use Assets\Foo;
@@ -10,6 +12,33 @@ use Assets\BazInterface;
 
 class ContainerTest extends PHPUnit_Framework_TestCase
 {
+    use ContainerAwareTrait;
+
+    public function testClosureResolution()
+    {
+        Container::getContainer()->register('Test', function() {
+            return 'Hello World';
+        });
+
+        $this->assertSame(Container::getContainer()->resolve('Test'), 'Hello World');
+    }
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testDefinitionThrowsExceptionWhenNoClass()
+    {
+        $definition = new Definition(null, new Container);
+        $definition();
+    }
+
+    public function testSetAndGetContainerWithTrait()
+    {
+        $this->assertTrue($this->getContainer() instanceof Container);
+        $this->setContainer(new Container);
+        $this->assertTrue($this->getContainer() instanceof Container);
+    }
+
     public function testArrayAccess()
     {
         $container = (new Container)->autoResolve(true);
@@ -26,6 +55,14 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($container->resolve('Assets\Baz') instanceof Baz);
     }
 
+    public function testResolvesDependencyRegisteredWithContainer()
+    {
+        $container = (new Container)->autoResolve(true);
+        $container->register('Assets\Bar');
+        $container->register('Assets\Baz');
+        $this->assertTrue($container->resolve('Assets\Foo') instanceof Foo);
+    }
+
     public function testSharedResolution()
     {
         $container = (new Container)->autoResolve(true);
@@ -35,16 +72,6 @@ class ContainerTest extends PHPUnit_Framework_TestCase
         $object2 = $container->resolve('Baz');
 
         $this->assertSame($object1, $object2);
-    }
-
-    public function testClosureResolution()
-    {
-        $container = new Container;
-        $container->register('Test', function() {
-            return 'Hello World';
-        });
-
-        $this->assertSame($container->resolve('Test'), 'Hello World');
     }
 
     public function testClosureResolutionWithArgs()

@@ -179,10 +179,6 @@ class Container implements ContainerInterface, ArrayAccess
             $this->shared[$alias] = $object;
         }
 
-        if (is_null($object)) {
-            throw new \RuntimeException('Unable to resolve an instance of ' . $alias);
-        }
-
         return $object;
     }
 
@@ -230,15 +226,15 @@ class Container implements ContainerInterface, ArrayAccess
             $dependency     = $param->getClass();
             $dependencyName = $dependency->getName();
 
-            // if the type hint is instantiable we just resolve it
-            if ($dependency->isInstantiable()) {
+            // has the dependency been registered to an alias with the container?
+            // e.g. Interface to Implementation
+            if (array_key_exists($dependencyName, $this->values)) {
                 $dependencies[] = $this->resolve($dependencyName);
                 continue;
             }
 
-            // has the dependency been registered to an alias with the container?
-            // e.g. Interface to Implementation
-            if (array_key_exists($dependencyName, $this->values)) {
+            // if the type hint is instantiable we just resolve it
+            if ($dependency->isInstantiable()) {
                 $dependencies[] = $this->resolve($dependencyName);
                 continue;
             }

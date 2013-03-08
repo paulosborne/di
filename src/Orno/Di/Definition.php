@@ -6,7 +6,7 @@ use ReflectionMethod;
 class Definition
 {
     use ContainerAwareTrait;
-    
+
     /**
      * The fully qualified namespace of the instance to return
      *
@@ -112,19 +112,6 @@ class Definition
         }
 
         return $object;
-    }
-
-    /**
-     * Sets the class for this instance
-     *
-     * @param  string     $class
-     * @return Definition $this
-     */
-    public function setClass($class)
-    {
-        $this->class = $class;
-
-        return $this;
     }
 
     /**
