@@ -16,7 +16,7 @@
     "autoload": {
         "psr-0": {
             "Orno\\Di": "src/",
-            "Assets": "tests/"
+            "Assets\\OrnoTest": "tests/"
         }
     },
     "minimum-stability": "dev"

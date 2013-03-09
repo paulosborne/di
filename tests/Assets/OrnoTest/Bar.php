@@ -1,11 +1,11 @@
-<?php namespace Assets;
+<?php namespace Assets\OrnoTest;
 
 class Bar
 {
     public $baz;
 
     /**
-     * @param Assets\Baz $baz
+     * @param Assets\OrnoTest\Baz $baz
      */
     public function __construct(BazInterface $baz = null)
     {

@@ -1,4 +1,4 @@
-<?php namespace Assets;
+<?php namespace Assets\OrnoTest;
 
 class Baz implements BazInterface
 {
