@@ -5,10 +5,10 @@ use Orno\Di\Definition;
 use Orno\Di\ContainerAwareTrait;
 use PHPUnit_Framework_TestCase;
 use stdClass;
-use Assets\Foo;
-use Assets\Bar;
-use Assets\Baz;
-use Assets\BazInterface;
+use Assets\OrnoTest\Foo;
+use Assets\OrnoTest\Bar;
+use Assets\OrnoTest\Baz;
+use Assets\OrnoTest\BazInterface;
 
 class ContainerTest extends PHPUnit_Framework_TestCase
 {
@@ -52,21 +52,21 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     public function testAutomaticResolution()
     {
         $container = (new Container)->autoResolve(true);
-        $this->assertTrue($container->resolve('Assets\Baz') instanceof Baz);
+        $this->assertTrue($container->resolve('Assets\OrnoTest\Baz') instanceof Baz);
     }
 
     public function testResolvesDependencyRegisteredWithContainer()
     {
         $container = (new Container)->autoResolve(true);
-        $container->register('Assets\Bar');
-        $container->register('Assets\Baz');
-        $this->assertTrue($container->resolve('Assets\Foo') instanceof Foo);
+        $container->register('Assets\OrnoTest\Bar');
+        $container->register('Assets\OrnoTest\Baz');
+        $this->assertTrue($container->resolve('Assets\OrnoTest\Foo') instanceof Foo);
     }
 
     public function testSharedResolution()
     {
         $container = (new Container)->autoResolve(true);
-        $container->register('Baz', 'Assets\Baz', true);
+        $container->register('Baz', 'Assets\OrnoTest\Baz', true);
 
         $object1 = $container->resolve('Baz');
         $object2 = $container->resolve('Baz');
@@ -101,18 +101,18 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     {
         $container = (new Container)->autoResolve(true);
 
-        $container->register('Test', 'Assets\Baz');
-        $container->register('Assets\BazInterface', 'Assets\Baz');
+        $container->register('Test', 'Assets\OrnoTest\Baz');
+        $container->register('Assets\OrnoTest\BazInterface', 'Assets\OrnoTest\Baz');
 
         $this->assertTrue($container->resolve('Test') instanceof Baz);
-        $this->assertTrue($container->resolve('Assets\BazInterface') instanceof Baz);
+        $this->assertTrue($container->resolve('Assets\OrnoTest\BazInterface') instanceof Baz);
     }
 
     public function testMultipleNestedDependencies()
     {
         $container = (new Container)->autoResolve(true);
 
-        $foo = $container->resolve('Assets\Foo');
+        $foo = $container->resolve('Assets\OrnoTest\Foo');
 
         $this->assertTrue($foo instanceof Foo);
         $this->assertTrue($foo->bar instanceof Bar);
@@ -123,14 +123,14 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     {
         $container = (new Container)->autoResolve(true);
 
-        $this->assertTrue($container['Assets\Bar']->baz instanceof BazInterface);
+        $this->assertTrue($container['Assets\OrnoTest\Bar']->baz instanceof BazInterface);
     }
 
     public function testDefinitionInstanceConstructorInjection()
     {
         $container = new Container;
 
-        $container->register('bar', 'Assets\Bar')
+        $container->register('bar', 'Assets\OrnoTest\Bar')
                   ->withArgument(new Baz);
 
         $bar = $container->resolve('bar');
@@ -144,7 +144,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     {
         $container = new Container;
 
-        $container->register('bar', 'Assets\Bar')
+        $container->register('bar', 'Assets\OrnoTest\Bar')
                   ->withMethodCall('setBaz', [new Baz]);
 
         $bar = $container->resolve('bar');
@@ -158,8 +158,8 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     {
         $container = new Container;
 
-        $container->register('baz', 'Assets\Baz');
-        $container->register('bar', 'Assets\Bar')
+        $container->register('baz', 'Assets\OrnoTest\Baz');
+        $container->register('bar', 'Assets\OrnoTest\Bar')
                   ->withArgument('baz');
 
         $bar = $container->resolve('bar');
@@ -173,8 +173,8 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     {
         $container = new Container;
 
-        $container->register('baz', 'Assets\Baz');
-        $container->register('bar', 'Assets\Bar')
+        $container->register('baz', 'Assets\OrnoTest\Baz');
+        $container->register('bar', 'Assets\OrnoTest\Bar')
                   ->withMethodCall('setBaz', ['baz']);
 
         $bar = $container->resolve('bar');
@@ -187,18 +187,18 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     public function testSetConfigWithConstructorInjection()
     {
         $map = [
-            'Assets\Foo' => [
-                'arguments' => ['Assets\Bar']
+            'Assets\OrnoTest\Foo' => [
+                'arguments' => ['Assets\OrnoTest\Bar']
             ],
-            'Assets\Bar' => [
-                'arguments' => ['Assets\Baz']
+            'Assets\OrnoTest\Bar' => [
+                'arguments' => ['Assets\OrnoTest\Baz']
             ],
-            'Assets\Baz' => []
+            'Assets\OrnoTest\Baz' => []
         ];
 
         $container = new Container($map);
 
-        $foo = $container->resolve('Assets\Foo');
+        $foo = $container->resolve('Assets\OrnoTest\Foo');
 
         $this->assertTrue($foo instanceof Foo);
         $this->assertTrue($foo->bar instanceof Bar);
@@ -208,19 +208,19 @@ class ContainerTest extends PHPUnit_Framework_TestCase
     public function testSetConfigWithSetterInjection()
     {
         $map = [
-            'Assets\Bar' => [
+            'Assets\OrnoTest\Bar' => [
                 'methods' => [
                     'setBaz' => [
-                        'Assets\Baz'
+                        'Assets\OrnoTest\Baz'
                     ]
                 ]
             ],
-            'Assets\Baz' => []
+            'Assets\OrnoTest\Baz' => []
         ];
 
         $container = new Container($map);
 
-        $bar = $container->resolve('Assets\Bar');
+        $bar = $container->resolve('Assets\OrnoTest\Bar');
 
         $this->assertTrue($bar instanceof Bar);
         $this->assertTrue($bar->baz instanceof Baz);
