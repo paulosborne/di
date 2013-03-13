@@ -70,7 +70,7 @@ class Definition
             $arguments = [];
 
             foreach ($this->arguments as $arg) {
-                if (is_string($arg) && class_exists($arg)) {
+                if (is_string($arg) && (class_exists($arg) || $this->container->registered($arg))) {
                     $arguments[] = $this->container->resolve($arg);
                     continue;
                 }
