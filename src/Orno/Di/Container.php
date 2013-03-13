@@ -148,6 +148,8 @@ class Container implements ContainerInterface, ArrayAccess
     public function resolve($alias, array $args = [])
     {
         $object = null;
+        $closure = false;
+        $definition = false;
 
         if (! array_key_exists($alias, $this->values)) {
             $this->register($alias);
@@ -161,16 +163,18 @@ class Container implements ContainerInterface, ArrayAccess
         // if the item is a factory closure we call the function with args
         if ($this->values[$alias]['object'] instanceof Closure) {
             $object = call_user_func_array($this->values[$alias]['object'], $args);
+            $closure = true;
         }
 
         // if the item is an instance of Definition we invoke it
         if ($this->values[$alias]['object'] instanceof Definition) {
             $object = $this->values[$alias]['object']();
+            $definition = true;
         }
 
         // if we've got this far and $autoResolve is turned on then we need to
         // build the object and resolve it's dependencies
-        if ($this->autoResolve === true && is_null($object)) {
+        if ($this->autoResolve === true && $closure === false && $definition === false) {
             $object = $this->build($alias, $this->values[$alias]['object']);
         }
 
