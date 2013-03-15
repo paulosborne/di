@@ -72,7 +72,7 @@ class Container implements ContainerInterface, ArrayAccess
     public function setConfig(array $config = [])
     {
         foreach ($config as $alias => $options) {
-            $shared = (array_key_exists('shared', $options)) ? (bool) $options['shared'] : false;
+            $shared = (array_key_exists('shared', $options)) ?: false;
 
             $object = (array_key_exists('object', $options)) ? $options['object'] : $alias;
 
@@ -108,7 +108,7 @@ class Container implements ContainerInterface, ArrayAccess
         }
 
         // do we want to store this object as a singleton?
-        $this->values[$alias]['shared'] = $shared === true ?: false;
+        $this->values[$alias]['shared'] = ($shared === true) ?: false;
 
         // if the $object is a string and $autoResolve is turned off we get a new
         // Definition instance to allow further configuration of our object
@@ -151,6 +151,8 @@ class Container implements ContainerInterface, ArrayAccess
         $closure = false;
         $definition = false;
 
+        // if the requested item is not registered with the container already
+        // then we register it for easier resolution
         if (! array_key_exists($alias, $this->values)) {
             $this->register($alias);
         }
