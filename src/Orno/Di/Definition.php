@@ -33,8 +33,14 @@ class Definition
      *
      * @param string $class
      */
-    public function __construct($class = null, ContainerInterface $container)
+    public function __construct($class = null, ContainerInterface $container = null)
     {
+        if (is_null($container)) {
+            throw new \InvalidArgumentException(
+                'Method ' . __METHOD__ . ' requires an implementation of Orno\Di\ContainerInterface'
+            );
+        }
+
         $this->class = $class;
         $this->container = $container;
     }
@@ -49,7 +55,9 @@ class Definition
         $object = null;
 
         if (! $this->hasClass()) {
-            throw new \RuntimeException('The definition has no class associated with it');
+            throw new \RuntimeException(
+                'The definition has no class associated with it'
+            );
         }
 
         $object = $this->handleConstructorInjection();
@@ -66,7 +74,6 @@ class Definition
     {
         if ($this->hasArguments()) {
             $reflectionClass = new ReflectionClass($this->class);
-
             $arguments = [];
 
             foreach ($this->arguments as $arg) {
