@@ -99,12 +99,18 @@ class Definition
 
                 $methodArgs = [];
 
-                foreach ((array) $args as $arg) {
+                foreach ((array) $args as $arg => $params) {
                     if (is_string($arg) && $this->container->registered($arg)) {
-                        $methodArgs[] = $this->container->resolve($arg);
+                        $methodArgs[] = $this->container->resolve($arg, (array) $params);
                         continue;
                     }
-                    $methodArgs[] = $arg;
+
+                    if (is_integer($arg) && is_string($params) && $this->container->registered($params)) {
+                        $methodArgs[] = $this->container->resolve($params);
+                        continue;
+                    }
+
+                    $methodArgs[] = $params;
                 }
 
                 $reflectionMethod->invokeArgs($object, $methodArgs);

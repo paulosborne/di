@@ -76,6 +76,8 @@ class Container implements ContainerInterface, ArrayAccess
 
             $object = (array_key_exists('object', $options)) ? $options['object'] : $alias;
 
+            $object = ($options instanceof Closure) ? $options : $alias;
+
             $object = $this->register($alias, $object, $shared);
 
             if (array_key_exists('arguments', $options)) {
