@@ -33,14 +33,8 @@ class Definition
      *
      * @param string $class
      */
-    public function __construct($class = null, ContainerInterface $container = null)
+    public function __construct($class = null, ContainerInterface $container)
     {
-        if (is_null($container)) {
-            throw new \InvalidArgumentException(
-                'Method ' . __METHOD__ . ' requires an implementation of Orno\Di\ContainerInterface'
-            );
-        }
-
         $this->class = $class;
         $this->container = $container;
     }
