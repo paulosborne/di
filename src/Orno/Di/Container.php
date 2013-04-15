@@ -114,7 +114,7 @@ class Container implements ContainerInterface, ArrayAccess
 
         // if the $object is a string and $autoResolve is turned off we get a new
         // Definition instance to allow further configuration of our object
-        if (is_string($object) && $this->autoResolve === false) {
+        if (is_string($object)) {
             $object = new Definition($object, $this);
         }
 
