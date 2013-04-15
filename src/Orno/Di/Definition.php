@@ -22,7 +22,7 @@ class Definition
     protected $arguments = [];
 
     /**
-     * Associative array of methods to call before returning the object
+     * Array of methods to call before returning the object
      *
      * @var array
      */
