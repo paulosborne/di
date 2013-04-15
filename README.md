@@ -93,7 +93,7 @@ $container = new Orno\Di\Container;
 $container->register('session', 'Session')
           ->withArguments([new Storage, 'my_session_key']);
 
-$session = $container->resolve('storage');
+$session = $container->resolve('session');
 ```
 
 ### Setter Injection
