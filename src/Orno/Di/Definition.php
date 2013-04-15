@@ -101,12 +101,12 @@ class Definition
     public function handleMethodCalls($object)
     {
         if ($this->hasMethodCalls()) {
-            foreach ($this->methods as $method => $args) {
-                $reflectionMethod = new ReflectionMethod($object, $method);
+            foreach ($this->methods as $method) {
+                $reflectionMethod = new ReflectionMethod($object, $method['method']);
 
                 $methodArgs = [];
 
-                foreach ((array) $args as $arg => $params) {
+                foreach ((array) $method['arguments'] as $arg => $params) {
                     if (is_string($arg) && $this->container->registered($arg)) {
                         $methodArgs[] = $this->container->resolve($arg, (array) $params);
                         continue;
@@ -184,7 +184,10 @@ class Definition
      */
     public function withMethodCall($method, array $arguments = [])
     {
-        $this->methods[$method] = $arguments;
+        $this->methods[] = [
+            'method' => $method,
+            'arguments' =>$arguments
+        ];
 
         return $this;
     }
