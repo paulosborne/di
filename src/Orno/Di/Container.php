@@ -172,14 +172,8 @@ class Container implements ContainerInterface, ArrayAccess
 
         // if the item is an instance of Definition we invoke it
         if ($this->values[$alias]['object'] instanceof Definition) {
-            $object = $this->values[$alias]['object']();
+            $object = $this->values[$alias]['object']($this->autoResolve);
             $definition = true;
-        }
-
-        // if we've got this far and $autoResolve is turned on then we need to
-        // build the object and resolve it's dependencies
-        if ($this->autoResolve === true && $closure === false && $definition === false) {
-            $object = $this->build($alias, $this->values[$alias]['object']);
         }
 
         // do we need to save it as a shared item?
@@ -198,7 +192,7 @@ class Container implements ContainerInterface, ArrayAccess
      * @param  string $object
      * @return object
      */
-    public function build($alias, $object)
+    public function build($object)
     {
         $reflection = new ReflectionClass($object);
         $construct = $reflection->getConstructor();

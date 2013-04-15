@@ -50,7 +50,7 @@ class Definition
      *
      * @return object
      */
-    public function __invoke()
+    public function __invoke($autoResolve = false)
     {
         $object = null;
 
@@ -60,7 +60,7 @@ class Definition
             );
         }
 
-        $object = $this->handleConstructorInjection();
+        $object = $this->handleConstructorInjection($autoResolve);
 
         return $this->handleMethodCalls($object);
     }
@@ -70,7 +70,7 @@ class Definition
      *
      * @return object
      */
-    public function handleConstructorInjection()
+    public function handleConstructorInjection($autoResolve = false)
     {
         if ($this->hasArguments()) {
             $reflectionClass = new ReflectionClass($this->class);
@@ -86,7 +86,11 @@ class Definition
 
             $object = $reflectionClass->newInstanceArgs($arguments);
         } else {
-            $object = new $this->class;
+            if ($autoResolve === false) {
+                $object = new $this->class;
+            } else {
+                $object = $this->container->build($this->class);
+            }
         }
 
         return $object;
