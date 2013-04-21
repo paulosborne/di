@@ -1,8 +1,24 @@
-<?php namespace Orno\Di;
+<?php
+
+/**
+ * The Orno Component Library
+ *
+ * @author  Phil Bennett @philipobenito
+ * @license http://www.wtfpl.net/txt/copying/ WTFPL
+ */
+namespace Orno\Di;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Orno\Di\ContainerInterface;
 
+/**
+ * Definition
+ *
+ * A definition of an item registered with the dependency injection container. Holds
+ * information regarding constructor injection and any method calls to be invoked
+ * before returning an instance of the item
+ */
 class Definition
 {
     use ContainerAwareTrait;
@@ -38,7 +54,9 @@ class Definition
     /**
      * Constructor
      *
-     * @param string $class
+     * @param string                      $class
+     * @param \Orno\Di\ContainerInterface $container
+     * @param boolean                     $auto
      */
     public function __construct($class = null, ContainerInterface $container, $auto = false)
     {
@@ -48,7 +66,9 @@ class Definition
     }
 
     /**
-     * Configures and returns the class associated with this instance
+     * Magic Invoke
+     *
+     * Configure and returns the object associated with this definition
      *
      * @return object
      */
@@ -68,7 +88,9 @@ class Definition
     }
 
     /**
-     * Handles any arguments to be injected into the container
+     * Handle Constructor Injection
+     *
+     * Instantiates the object with any constructor arguments injected
      *
      * @return object
      */
@@ -99,7 +121,9 @@ class Definition
     }
 
     /**
-     * Calls all methods that are configured on the object with injected arguments
+     * Handle Method Calls
+     *
+     * Invokes all methods that are associated with the definition
      *
      * @param  object $object
      * @return object
@@ -134,7 +158,9 @@ class Definition
     }
 
     /**
-     * Checks if this Definition has a class associated with it
+     * Has Class?
+     *
+     * Checks if the definition has a class associated with it
      *
      * @return boolean
      */
@@ -144,10 +170,12 @@ class Definition
     }
 
     /**
-     * Sets a constructor argument for this instance
+     * With Argument
      *
-     * @param  mixed      $argument
-     * @return Definition $this
+     * Sets a constructor argument for the definition
+     *
+     * @param  mixed $argument
+     * @return \Orno\Di\Definition
      */
     public function withArgument($argument)
     {
@@ -157,10 +185,12 @@ class Definition
     }
 
     /**
-     * Proxy to withArgument() method, accepts array of arguments
+     * With Arguments
      *
-     * @param  array      $arguments
-     * @return Definition $this
+     * Proxy to withArgument method, accepts an array of arguments
+     *
+     * @param  array $arguments
+     * @return \Orno\Di\Definition
      */
     public function withArguments(array $arguments)
     {
@@ -172,7 +202,9 @@ class Definition
     }
 
     /**
-     * Checks if this Definition has arguments to inject
+     * Has Arguments?
+     *
+     * Checks if the definition has registered constructor arguments to inject
      *
      * @return boolean
      */
@@ -182,11 +214,13 @@ class Definition
     }
 
     /**
-     * Adds a method call to this instance
+     * With Method Call
      *
-     * @param  string     $method
-     * @param  array      $arguments
-     * @return Definition $this
+     * Sets a method call for the definition
+     *
+     * @param  string $method
+     * @param  array  $arguments
+     * @return \Orno\Di\Definition
      */
     public function withMethodCall($method, array $arguments = [])
     {
@@ -199,10 +233,12 @@ class Definition
     }
 
     /**
-     * Proxy to withMethodCall() method, accepts array of method calls
+     * With Method Calls
      *
-     * @param  array      $methods
-     * @return Definition $this
+     * Proxy to withMethodCall method, accepts array of method calls with method arguments
+     *
+     * @param  array $methods
+     * @return \Orno\Di\Definition
      */
     public function withMethodCalls(array $methods = [])
     {
@@ -214,7 +250,9 @@ class Definition
     }
 
     /**
-     * Checks if this definition has methods to call
+     * Has Method Calls?
+     *
+     * Checks if this definition has any registered methods to invoke
      *
      * @return boolean
      */
