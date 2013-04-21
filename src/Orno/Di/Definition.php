@@ -29,14 +29,22 @@ class Definition
     protected $methods = [];
 
     /**
+     * Does the object need to be auto resolved?
+     *
+     * @var boolean
+     */
+    protected $auto;
+
+    /**
      * Constructor
      *
      * @param string $class
      */
-    public function __construct($class = null, ContainerInterface $container)
+    public function __construct($class = null, ContainerInterface $container, $auto = false)
     {
         $this->class = $class;
         $this->container = $container;
+        $this->auto = $auto;
     }
 
     /**
@@ -44,7 +52,7 @@ class Definition
      *
      * @return object
      */
-    public function __invoke($autoResolve = false)
+    public function __invoke()
     {
         $object = null;
 
@@ -54,7 +62,7 @@ class Definition
             );
         }
 
-        $object = $this->handleConstructorInjection($autoResolve);
+        $object = $this->handleConstructorInjection();
 
         return $this->handleMethodCalls($object);
     }
@@ -64,7 +72,7 @@ class Definition
      *
      * @return object
      */
-    public function handleConstructorInjection($autoResolve = false)
+    public function handleConstructorInjection()
     {
         if ($this->hasArguments()) {
             $reflectionClass = new ReflectionClass($this->class);
@@ -80,7 +88,7 @@ class Definition
 
             $object = $reflectionClass->newInstanceArgs($arguments);
         } else {
-            if ($autoResolve === false) {
+            if ($this->auto === false) {
                 $object = new $this->class;
             } else {
                 $object = $this->container->build($this->class);

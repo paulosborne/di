@@ -29,13 +29,6 @@ class Container implements ContainerInterface, ArrayAccess
     protected $shared = [];
 
     /**
-     * Should the container automatically resolve dependencies?
-     *
-     * @var boolean
-     */
-    protected $autoResolve = false;
-
-    /**
      * Constructor
      *
      * @param array $config
@@ -101,7 +94,7 @@ class Container implements ContainerInterface, ArrayAccess
      * @param  boolean $shared
      * @return void
      */
-    public function register($alias, $object = null, $shared = false)
+    public function register($alias, $object = null, $shared = false, $auto = false)
     {
         // if $object is null we assume the $alias is a class name that
         // needs to be registered
@@ -115,7 +108,7 @@ class Container implements ContainerInterface, ArrayAccess
         // if the $object is a string and $autoResolve is turned off we get a new
         // Definition instance to allow further configuration of our object
         if (is_string($object)) {
-            $object = new Definition($object, $this);
+            $object = new Definition($object, $this, $auto);
         }
 
         // simply store whatever $object is in the container and resolve it
@@ -156,7 +149,7 @@ class Container implements ContainerInterface, ArrayAccess
         // if the requested item is not registered with the container already
         // then we register it for easier resolution
         if (! array_key_exists($alias, $this->values)) {
-            $this->register($alias);
+            $this->register($alias, $alias, false, true);
         }
 
         // if the item is currently stored as a shared item we just return it
@@ -172,7 +165,7 @@ class Container implements ContainerInterface, ArrayAccess
 
         // if the item is an instance of Definition we invoke it
         if ($this->values[$alias]['object'] instanceof Definition) {
-            $object = $this->values[$alias]['object']($this->autoResolve);
+            $object = $this->values[$alias]['object']();
             $definition = true;
         }
 
@@ -254,12 +247,6 @@ class Container implements ContainerInterface, ArrayAccess
                     }
                 }
             }
-
-            // is there a default value available?
-            if ($param->isDefaultValueAvailable()) {
-                $dependencies[] = $param->getDefaultValue();
-                continue;
-            }
         }
 
         return $dependencies;
@@ -283,18 +270,6 @@ class Container implements ContainerInterface, ArrayAccess
         );
 
         return $result > 0 ? $matches : false;
-    }
-
-    /**
-     * Sets the $autoResolve option
-     *
-     * @param  boolean   $auto
-     * @return Container $this
-     */
-    public function autoResolve($auto)
-    {
-        $this->autoResolve = (bool) $auto;
-        return $this;
     }
 
     /**

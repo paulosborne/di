@@ -41,7 +41,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testArrayAccess()
     {
-        $container = (new Container)->autoResolve(true);
+        $container = new Container;
         $container['test'] = function() { return 'Hello World'; };
         $this->assertTrue(isset($container['test']));
         $this->assertSame($container['test'], 'Hello World');
@@ -51,13 +51,13 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testAutomaticResolution()
     {
-        $container = (new Container)->autoResolve(true);
+        $container = new Container;
         $this->assertTrue($container->resolve('Assets\OrnoTest\Baz') instanceof Baz);
     }
 
     public function testResolvesDependencyRegisteredWithContainer()
     {
-        $container = (new Container)->autoResolve(true);
+        $container = new Container;
         $container->register('Assets\OrnoTest\Bar');
         $container->register('Assets\OrnoTest\Baz');
         $this->assertTrue($container->resolve('Assets\OrnoTest\Foo') instanceof Foo);
@@ -65,7 +65,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testSharedResolution()
     {
-        $container = (new Container)->autoResolve(true);
+        $container = new Container;
         $container->register('Baz', 'Assets\OrnoTest\Baz', true);
 
         $object1 = $container->resolve('Baz');
@@ -99,7 +99,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testAliasedDependencyResolution()
     {
-        $container = (new Container)->autoResolve(true);
+        $container = new Container;
 
         $container->register('Test', 'Assets\OrnoTest\Baz');
         $container->register('Assets\OrnoTest\BazInterface', 'Assets\OrnoTest\Baz');
@@ -110,7 +110,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testMultipleNestedDependencies()
     {
-        $container = (new Container)->autoResolve(true);
+        $container = new Container;
 
         $foo = $container->resolve('Assets\OrnoTest\Foo');
 
@@ -121,7 +121,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
     public function testImplementationIsInstanceOfInterface()
     {
-        $container = (new Container)->autoResolve(true);
+        $container = new Container;
 
         $this->assertTrue($container['Assets\OrnoTest\Bar']->baz instanceof BazInterface);
     }
