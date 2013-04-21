@@ -260,6 +260,12 @@ class Container implements ContainerInterface, ArrayAccess
                     }
                 }
             }
+
+            // is there a default value available?
+            if ($param->isDefaultValueAvailable()) {
+                $dependencies[] = $param->getDefaultValue();
+                continue;
+            }
         }
 
         return $dependencies;
